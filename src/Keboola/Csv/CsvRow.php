@@ -130,9 +130,9 @@ class CsvRow implements \ArrayAccess, \Countable
 
     public function offsetSet ($offset, $value) {
         if (array_key_exists($offset, $this->RowData)) {
-            unset($this->RowData[$offset]);
+            $this->RowData[$offset] = $value;
         } else {
-            unset($this->AssocRowData[$offset]);
+            $this->AssocRowData[$offset] = $value;
         }
     }
 
