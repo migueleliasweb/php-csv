@@ -22,7 +22,15 @@ class CsvFile extends \SplFileInfo implements \Iterator
 	protected $_rowCounter = 0;
 	protected $_currentRow;
 	protected $_lineBreak;
+        
+        protected $header;
 
+        /**
+         * @param string $fileName The filename
+         * @param string $delimiter Fields delimiter (Defaults to comma)
+         * @param string $enclosure Fields enclousure (Defaults to double quotes)
+         * @param string $escapedBy Fields escape caracter (Defaults to empty string)
+         */
 	public function __construct($fileName, $delimiter = self::DEFAULT_DELIMITER, $enclosure = self::DEFAULT_ENCLOSURE, $escapedBy = "")
 	{
 		parent::__construct($fileName);
@@ -30,7 +38,8 @@ class CsvFile extends \SplFileInfo implements \Iterator
 		$this->_escapedBy = $escapedBy;
 		$this->_setDelimiter($delimiter);
 		$this->_setEnclosure($enclosure);
-
+                $this->_setHeader();
+                $this->_lineBreak = $this->_detectLineBreak();
 	}
 
 	/**
@@ -96,16 +105,22 @@ class CsvFile extends \SplFileInfo implements \Iterator
 	{
 		return count($this->getHeader());
 	}
+        
+        protected function _setHeader() {
+            $this->rewind();
+
+            $current = $this->current();
+            
+            if ($current instanceof CsvRow) {
+                $this->header = $current;
+            } else {
+                $this->header = array();
+            }
+        }
 
 	public function getHeader()
 	{
-		$this->rewind();
-		$current = $this->current();
-		if (is_array($current)) {
-			return $current;
-		}
-
-		return array();
+            return $this->header;
 	}
 
 	public function writeRow(array $row)
@@ -123,21 +138,25 @@ class CsvFile extends \SplFileInfo implements \Iterator
 		}
 	}
 
-	public function rowToStr(array $row)
+        /**
+         * @param array|CsvRow $row
+         * @return string
+         */
+	public function rowToStr($row)
 	{
-		$return = array();
-		foreach ($row as $column) {
-			$return[] = $this->getEnclosure()
-				. str_replace($this->getEnclosure(), str_repeat($this->getEnclosure(), 2), $column) . $this->getEnclosure();
-		}
-		return implode($this->getDelimiter(), $return) . "\n";
+                if (is_array($row)) {
+                    $return = array();
+                    foreach ($row as $column) {
+                            $return[] = $this->getEnclosure().str_replace($this->getEnclosure(), str_repeat($this->getEnclosure(), 2), $column) . $this->getEnclosure();
+                    }
+                    return implode($this->getDelimiter(), $return) . "\n";
+                } else {
+                    return $row->toString().$row->getDelimiter();
+                }
 	}
 
 	public function getLineBreak()
 	{
-		if (!$this->_lineBreak) {
-			$this->_lineBreak = $this->_detectLineBreak();
-		}
 		return $this->_lineBreak;
 	}
 
@@ -264,7 +283,11 @@ class CsvFile extends \SplFileInfo implements \Iterator
 		// allow empty enclosure hack
 		$enclosure = !$this->getEnclosure() ? chr(0) : $this->getEnclosure();
 		$escapedBy = !$this->_escapedBy ? chr(0) : $this->_escapedBy;
-		return fgetcsv($this->_getFilePointer(), null, $this->getDelimiter(), $enclosure, $escapedBy);
+                
+                $RowData = fgetcsv($this->_getFilePointer(), null, $this->getDelimiter(), $enclosure, $escapedBy);
+                $HeaderRow = ($this->_rowCounter === 0) ? $RowData : $this->getHeader();                
+
+                return new CsvRow($RowData, $HeaderRow);
 	}
 
 	protected function _getFilePointer($mode = 'r')

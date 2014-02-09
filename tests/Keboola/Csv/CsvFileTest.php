@@ -37,20 +37,23 @@ class Keboola_CsvFileTest extends PHPUnit_Framework_TestCase
 	 */
 	public function testRead($fileName, $delimiter)
 	{
-		$csvFile = new \Keboola\Csv\CsvFile(__DIR__ . '/_data/' . $fileName, $delimiter, '"');
+            $csvFile = new \Keboola\Csv\CsvFile(__DIR__ . '/_data/' . $fileName, $delimiter, '"');
 
-		$expected = array(
-				"id",
-				"idAccount",
-				"date",
-				"totalFollowers",
-				"followers",
-				"totalStatuses",
-				"statuses",
-				"kloutScore",
-				"timestamp",
-		);
-		$this->assertEquals($expected, $csvFile->getHeader());
+            $Header = array(
+                "id",
+                "idAccount",
+                "date",
+                "totalFollowers",
+                "followers",
+                "totalStatuses",
+                "statuses",
+                "kloutScore",
+                "timestamp",
+            );
+            
+            $CsvRow = new Keboola\Csv\CsvRow($Header, $Header);
+
+            $this->assertEquals($CsvRow, $csvFile->getHeader());
 	}
 
 	public function validCsvFiles()
@@ -239,21 +242,23 @@ class Keboola_CsvFileTest extends PHPUnit_Framework_TestCase
 	{
 		$csvFile = new CsvFile(__DIR__ . '/_data/test-input.csv');
 
-		$expected = array(
-			"id",
-			"idAccount",
-			"date",
-			"totalFollowers",
-			"followers",
-			"totalStatuses",
-			"statuses",
-			"kloutScore",
-			"timestamp",
-		);
+                $RowData = array(
+                    "id",
+                    "idAccount",
+                    "date",
+                    "totalFollowers",
+                    "followers",
+                    "totalStatuses",
+                    "statuses",
+                    "kloutScore",
+                    "timestamp"
+                );
+                
+                $ExpectedHeaderRow = new Keboola\Csv\CsvRow($RowData, $RowData);
 
 		// header line
 		$csvFile->rewind();
-		$this->assertEquals($expected, $csvFile->current());
+		$this->assertEquals($ExpectedHeaderRow, $csvFile->current());
 
 		// first line
 		$csvFile->next();
