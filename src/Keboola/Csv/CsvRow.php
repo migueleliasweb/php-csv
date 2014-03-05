@@ -56,7 +56,7 @@ class CsvRow implements \ArrayAccess, \Countable
      * @param string $EscapedBy Fields escape caracter (Defaults to empty string)
      * @param string $LineBreak String representation of the line breaker (Defaults to PHP_EOL)
      */
-    public function __construct(array $RowData, array $HeaderRow, $Delimiter = self::DEFAULT_DELIMITER, $Enclosure = self::DEFAULT_ENCLOSURE, $EscapedBy = "", $LineBreak = PHP_EOL) {
+    public function __construct(array $RowData = array(), array $HeaderRow = array(), $Delimiter = self::DEFAULT_DELIMITER, $Enclosure = self::DEFAULT_ENCLOSURE, $EscapedBy = "", $LineBreak = PHP_EOL) {
         $this->RowData = $RowData;
         $this->HeaderRow = $HeaderRow;
         $this->AssocRowData = array_combine($HeaderRow, $RowData);
