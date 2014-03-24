@@ -7,7 +7,7 @@
  *
  */
 
-namespace Keboola\Csv;
+namespace Keboola\Csv\Exception;
 
 class Exception extends \Exception
 {
